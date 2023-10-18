@@ -128,3 +128,8 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+result.txt
+refresh_tokens.txt
+share_tokens.txt
+tokens.txt
