@@ -133,3 +133,5 @@ result.txt
 refresh_tokens.txt
 share_tokens.txt
 tokens.txt
+auth.json
+credentials.txt
