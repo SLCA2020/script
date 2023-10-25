@@ -1,5 +1,5 @@
 /*
-登录并获取 FK
+通过 refreshToken 刷新 FK
 */
 
 const got = require("got");
@@ -7,41 +7,40 @@ const fs = require("fs");
 const path = require("path");
 
 const resultPath = path.join(__dirname, "result.txt");
+const authJsonPath = path.join(__dirname, "auth.json");
 
-const authPath = path.join(__dirname, "credentials.txt");
-const authList = fs
-    .readFileSync(authPath, "utf8")
-    .split("\n")
-    .map((line) => {
-        return { username: line.split(",")[0], password: line.split(",")[1] };
-    });
+const refreshtokenList = JSON.parse(fs.readFileSync(authJsonPath)); // 读取 auth.json 文件
 
 let resStr = "";
+let currentRefreshtoken = "";
 
 //脚本入口函数main()
 async function main() {
-    for (let index = 0; index < authList.length; index++) {
-        const item = authList[index];
+    for (let index = 0; index < refreshtokenList.length; index++) {
+        const item = refreshtokenList[index];
+        currentRefreshtoken = item.session_token;
 
-        resStr += `${item.username},${item.password}\n`;
+        resStr += `${item.email},${item.password}\n`;
 
         //开始账号任务
-        await login(item, index + 1);
+        await refreshToken(currentRefreshtoken, index + 1, item.email);
     }
 
     fs.writeFileSync(resultPath, resStr); // 存储结果
     console.log(`\n最终结果已生成在 result.txt\n`);
 }
 
-// 登录接口
-async function login(data, index) {
-    console.log(`开始登录账号[${index}]: ${data.username}`);
+// 刷新Token接口
+async function refreshToken(token, index, email) {
+    console.log(`开始刷新账号[${index}]: ${email}`);
     try {
         let urlObject = {
-            fn: "/auth/login",
+            fn: "/auth/session",
             method: "post",
-            url: "https://ai.fakeopen.com/auth/login",
-            form: data,
+            url: "https://ai.fakeopen.com/auth/refresh",
+            form: {
+                session_token: token,
+            },
             //超时设置
             timeout: 15000,
         };
@@ -49,9 +48,8 @@ async function login(data, index) {
         const { result } = await request(urlObject);
 
         if (result.access_token && result.access_token !== "") {
+            currentRefreshtoken = result.session_token;
             await tokenRegister(result.access_token, index);
-            // resStr += `${result.refresh_token}\n\n`;
-            resStr += `${result.session_token}\n\n`;
         } else {
             console.log(`账号[${index}]\n${JSON.stringify(result)}`);
         }
@@ -85,6 +83,7 @@ async function tokenRegister(accessToken, index) {
 
         if (result.token_key && result.token_key !== "") {
             resStr += `${result.token_key}\n`;
+            resStr += `${currentRefreshtoken}\n\n`;
             console.log(`账号[${index}]成功`);
         } else {
             console.log(`账号[${index}]\n${JSON.stringify(result)}`);
