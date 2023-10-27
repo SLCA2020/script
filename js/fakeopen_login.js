@@ -6,42 +6,60 @@ const got = require("got");
 const fs = require("fs");
 const path = require("path");
 
-const resultPath = path.join(__dirname, "result.txt");
+const resultPath = path.join(__dirname, "result.json");
 
 const authPath = path.join(__dirname, "credentials.txt");
 const authList = fs
     .readFileSync(authPath, "utf8")
-    .split("\n")
+    .split("\r\n")
     .map((line) => {
         return { username: line.split(",")[0], password: line.split(",")[1] };
     });
 
-let resStr = "";
+let resJSON = [];
+let resItem = {
+    username: "",
+    password: "",
+    refresh_token: "",
+    session_token: "",
+    fk_token: "",
+    login_time: "",
+};
 
 //脚本入口函数main()
 async function main() {
     for (let index = 0; index < authList.length; index++) {
         const item = authList[index];
 
-        resStr += `${item.username},${item.password}\n`;
+        resItem.username = item.username;
+        resItem.password = item.password;
+        resItem.refresh_token = "";
+        resItem.session_token = "";
+        resItem.fk_token = "";
+        resItem.login_time = new Date().toLocaleString();
 
         //开始账号任务
         await login(item, index + 1);
+
+        resJSON.push(JSON.parse(JSON.stringify(resItem)));
     }
 
-    fs.writeFileSync(resultPath, resStr); // 存储结果
-    console.log(`\n最终结果已生成在 result.txt\n`);
+    fs.writeFileSync(resultPath, JSON.stringify(resJSON)); // 存储结果
+    console.log(`\n最终结果已生成在 result.json\n`);
 }
 
 // 登录接口
-async function login(data, index) {
-    console.log(`开始登录账号[${index}]: ${data.username}`);
+async function login({ username, password }, index) {
+    console.log(`开始登录账号[${index}]: ${username}`);
     try {
         let urlObject = {
             fn: "/auth/login",
             method: "post",
             url: "https://ai.fakeopen.com/auth/login",
-            form: data,
+            form: {
+                username,
+                password,
+            },
             //超时设置
             timeout: 15000,
         };
@@ -50,16 +68,14 @@ async function login(data, index) {
 
         if (result.access_token && result.access_token !== "") {
             await tokenRegister(result.access_token, index);
-            // resStr += `${result.refresh_token}\n\n`;
-            resStr += `${result.session_token}\n\n`;
+            resItem.refresh_token = result.refresh_token || "";
+            resItem.session_token = result.session_token || "";
         } else {
             console.log(`账号[${index}]\n${JSON.stringify(result)}`);
         }
     } catch (e) {
         //打印错误信息
         console.log(e);
-
-        resStr += `${e}\n\n`;
     }
 }
 
@@ -84,7 +100,7 @@ async function tokenRegister(accessToken, index) {
         const { result } = await request(urlObject);
 
         if (result.token_key && result.token_key !== "") {
-            resStr += `${result.token_key}\n`;
+            resItem.fk_token = result.token_key;
             console.log(`账号[${index}]成功`);
         } else {
             console.log(`账号[${index}]\n${JSON.stringify(result)}`);
