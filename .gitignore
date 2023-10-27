@@ -129,6 +129,9 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
+auth_str2json.js
+result.json
+result_err.json
 result.txt
 refresh_tokens.txt
 share_tokens.txt
