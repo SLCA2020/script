@@ -17,6 +17,7 @@ let resItem = {
     password: "",
     refresh_token: "",
     session_token: "",
+    access_token: "",
     fk_token: "",
     login_time: "",
 };
@@ -31,6 +32,7 @@ async function main() {
         resItem.password = password;
         resItem.refresh_token = refresh_token;
         resItem.session_token = "";
+        resItem.access_token = "";
         resItem.fk_token = "";
         resItem.login_time = new Date().toLocaleString();
 
@@ -75,6 +77,7 @@ async function refreshToken(token, index, email) {
         const { result } = await request(urlObject);
 
         if (result.access_token && result.access_token !== "") {
+            resItem.access_token = result.access_token || "";
             await tokenRegister(result.access_token, index);
         } else {
             console.log(`账号[${index}]\n${JSON.stringify(result)}`);
@@ -103,6 +106,7 @@ async function refreshTokenBySession(token, index, email) {
         const { result } = await request(urlObject);
 
         if (result.access_token && result.access_token !== "") {
+            resItem.access_token = result.access_token || "";
             resItem.session_token = result.session_token || "";
             await tokenRegister(result.access_token, index);
         } else {
