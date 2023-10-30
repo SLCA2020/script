@@ -24,6 +24,8 @@ let resItem = {
 
 //脚本入口函数main()
 async function main() {
+    // 打印账号数量
+    console.log(`账号数量: ${refreshtokenList.length}\n`);
     for (let index = 0; index < refreshtokenList.length; index++) {
         const { username, password, refresh_token, session_token } =
             refreshtokenList[index];
@@ -77,7 +79,7 @@ async function refreshToken(token, index, email) {
         const { result } = await request(urlObject);
 
         if (result.access_token && result.access_token !== "") {
-            resItem.access_token = result.access_token || "";
+            resItem.access_token = result.access_token;
             await tokenRegister(result.access_token, index);
         } else {
             console.log(`账号[${index}]\n${JSON.stringify(result)}`);
@@ -106,7 +108,7 @@ async function refreshTokenBySession(token, index, email) {
         const { result } = await request(urlObject);
 
         if (result.access_token && result.access_token !== "") {
-            resItem.access_token = result.access_token || "";
+            resItem.access_token = result.access_token;
             resItem.session_token = result.session_token || "";
             await tokenRegister(result.access_token, index);
         } else {
@@ -120,6 +122,11 @@ async function refreshTokenBySession(token, index, email) {
 
 // 注册或更新 Share Token
 async function tokenRegister(accessToken, index) {
+    // 判断是否有 GPT-4 模型
+    if (!(await getModels(accessToken, index))) {
+        return;
+    }
+
     try {
         let urlObject = {
             fn: "/token/register",
@@ -148,6 +155,42 @@ async function tokenRegister(accessToken, index) {
         //打印错误信息
         console.log(e);
     }
+}
+
+// 列出账号可用的模型并判断是否有 GPT-4 模型
+async function getModels(accessToken, index) {
+    console.log(`开始获取账号[${index}]可用的模型`);
+    try {
+        let urlObject = {
+            fn: "/api/models",
+            method: "get",
+            url: "https://ai.fakeopen.com/api/models",
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+            //超时设置
+            timeout: 15000,
+        };
+
+        const { result } = await request(urlObject);
+
+        // 判断是否有 GPT-4 模型
+        if (result.models) {
+            if (result.models.some((model) => model.title === "GPT-4")) {
+                console.log(`账号[${index}] GPT-4 true`);
+                return true;
+            } else {
+                console.log(`账号[${index}] GPT-4 false`);
+            }
+        } else {
+            console.log(`账号[${index}]\n${JSON.stringify(result)}`);
+        }
+    } catch (e) {
+        //打印错误信息
+        console.log(e);
+    }
+
+    return false;
 }
 
 //调用main()
