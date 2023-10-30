@@ -129,6 +129,7 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
+.idea
 auth_str2json.js
 result.json
 result_err.json
