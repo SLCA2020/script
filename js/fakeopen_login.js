@@ -148,7 +148,7 @@ async function getModels(accessToken, index) {
 
         // 判断是否有 GPT-4 模型
         if (result.models) {
-            if (result.models.some((model) => model.title === "GPT-4")) {
+            if (result.models.some((model) => model.slug === "gpt-4")) {
                 console.log(`账号[${index}] GPT-4 true`);
                 return true;
             } else {
