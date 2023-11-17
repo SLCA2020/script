@@ -136,6 +136,7 @@ result.txt
 refresh_tokens.txt
 share_tokens.txt
 tokens.txt
+tokens.json
 auth.json
 credentials.txt
 js/a.js
