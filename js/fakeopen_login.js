@@ -62,12 +62,12 @@ async function main() {
 
 // 登录接口
 async function login({ username, password }, index) {
-    console.log(`开始登录账号[${index}]: ${username}`);
+    console.log(`开始登录账号[${index}]: ${username},${password}`);
     try {
         let urlObject = {
             fn: "/auth/login",
             method: "post",
-            url: "https://ai.fakeopen.com/auth/login",
+            url: "http://localhost:8181/xxx/api/auth/login",
             form: {
                 username,
                 password,
@@ -103,7 +103,7 @@ async function tokenRegister(accessToken, index) {
         let urlObject = {
             fn: "/token/register",
             method: "post",
-            url: "https://ai.fakeopen.com/token/register",
+            url: "http://localhost:8181/xxx/api/token/register",
             form: {
                 unique_name: "slca",
                 access_token: accessToken,
@@ -136,7 +136,7 @@ async function getModels(accessToken, index) {
         let urlObject = {
             fn: "/api/models",
             method: "get",
-            url: "https://ai.fakeopen.com/api/models",
+            url: "http://localhost:8181/xxx/backend-api/models",
             headers: {
                 Authorization: `Bearer ${accessToken}`,
             },

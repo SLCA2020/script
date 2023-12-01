@@ -12,42 +12,51 @@ const authJsonPath = path.join(__dirname, "auth.json");
 const refreshtokenList = JSON.parse(fs.readFileSync(authJsonPath)); // 读取 auth.json 文件
 
 let resJSON = [];
-let resItem = {
-    username: "",
-    password: "",
-    refresh_token: "",
-    session_token: "",
-    access_token: "",
-    fk_token: "",
-    login_time: "",
-};
 
 //脚本入口函数main()
 async function main() {
     // 打印账号数量
     console.log(`账号数量: ${refreshtokenList.length}\n`);
+    let promises = [];
+    let counter = 0;
     for (let index = 0; index < refreshtokenList.length; index++) {
         const { username, password, refresh_token, session_token } =
             refreshtokenList[index];
 
-        resItem.username = username;
-        resItem.password = password;
-        resItem.refresh_token = refresh_token;
-        resItem.session_token = "";
-        resItem.access_token = "";
-        resItem.fk_token = "";
-        resItem.login_time = new Date().toLocaleString();
+        resJSON[index] = {
+            username: username,
+            password: password,
+            refresh_token: refresh_token,
+            session_token: session_token,
+            access_token: "",
+            fk_token: "",
+            login_time: new Date().toLocaleString(),
+        };
 
         // 判断是否有 refresh_token
         if (refresh_token && refresh_token !== "") {
             //开始账号任务
-            await refreshToken(refresh_token, index + 1, username);
+            promises.push(
+                refreshToken(refresh_token, index + 1, username, password)
+            );
         } else {
             //开始账号任务
-            await refreshTokenBySession(session_token, index + 1, username);
+            promises.push(
+                refreshTokenBySession(
+                    session_token,
+                    index + 1,
+                    username,
+                    password
+                )
+            );
         }
 
-        resJSON.push(JSON.parse(JSON.stringify(resItem)));
+        counter++;
+        if (counter === 5) {
+            await Promise.all(promises);
+            promises = [];
+            counter = 0;
+        }
     }
 
     fs.writeFileSync(
@@ -62,13 +71,13 @@ async function main() {
 }
 
 // 刷新Token接口通过 refresh_token
-async function refreshToken(token, index, email) {
-    console.log(`开始刷新账号[${index}]: ${email}`);
+async function refreshToken(token, index, email, password) {
+    console.log(`开始刷新账号[${index}]: ${email},${password}`);
     try {
         let urlObject = {
             fn: "/auth/refresh",
             method: "post",
-            url: "https://ai.fakeopen.com/auth/refresh",
+            url: "http://localhost:8181/xxx/api/auth/refresh",
             form: {
                 refresh_token: token,
             },
@@ -79,7 +88,7 @@ async function refreshToken(token, index, email) {
         const { result } = await request(urlObject);
 
         if (result.access_token && result.access_token !== "") {
-            resItem.access_token = result.access_token;
+            resJSON[index - 1].access_token = result.access_token;
             await tokenRegister(result.access_token, index);
         } else {
             console.log(`账号[${index}]\n${JSON.stringify(result)}`);
@@ -91,13 +100,13 @@ async function refreshToken(token, index, email) {
 }
 
 // 刷新Token接口通过 session_token
-async function refreshTokenBySession(token, index, email) {
-    console.log(`开始刷新账号[${index}]: ${email}`);
+async function refreshTokenBySession(token, index, email, password) {
+    console.log(`开始刷新账号[${index}]: ${email},${password}`);
     try {
         let urlObject = {
             fn: "/auth/session",
             method: "post",
-            url: "https://ai.fakeopen.com/auth/session",
+            url: "http://localhost:8181/xxx/api/auth/session",
             form: {
                 session_token: token,
             },
@@ -108,8 +117,8 @@ async function refreshTokenBySession(token, index, email) {
         const { result } = await request(urlObject);
 
         if (result.access_token && result.access_token !== "") {
-            resItem.access_token = result.access_token;
-            resItem.session_token = result.session_token || "";
+            resJSON[index - 1].access_token = result.access_token;
+            resJSON[index - 1].session_token = result.session_token || "";
             await tokenRegister(result.access_token, index);
         } else {
             console.log(`账号[${index}]\n${JSON.stringify(result)}`);
@@ -131,7 +140,7 @@ async function tokenRegister(accessToken, index) {
         let urlObject = {
             fn: "/token/register",
             method: "post",
-            url: "https://ai.fakeopen.com/token/register",
+            url: "http://localhost:8181/xxx/api/token/register",
             form: {
                 unique_name: "slca",
                 access_token: accessToken,
@@ -146,7 +155,7 @@ async function tokenRegister(accessToken, index) {
         const { result } = await request(urlObject);
 
         if (result.token_key && result.token_key !== "") {
-            resItem.fk_token = result.token_key;
+            resJSON[index - 1].fk_token = result.token_key;
             console.log(`账号[${index}]成功`);
         } else {
             console.log(`账号[${index}]\n${JSON.stringify(result)}`);
@@ -164,7 +173,7 @@ async function getModels(accessToken, index) {
         let urlObject = {
             fn: "/api/models",
             method: "get",
-            url: "https://ai.fakeopen.com/api/models",
+            url: "http://localhost:8181/xxx/backend-api/models",
             headers: {
                 Authorization: `Bearer ${accessToken}`,
             },
