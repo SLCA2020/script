@@ -36,26 +36,15 @@ async function main() {
         // 判断是否有 refresh_token
         if (refresh_token && refresh_token !== "") {
             //开始账号任务
-            promises.push(
-                refreshToken(refresh_token, index + 1, username, password)
-            );
+            await refreshToken(refresh_token, index + 1, username, password);
         } else {
             //开始账号任务
-            promises.push(
-                refreshTokenBySession(
-                    session_token,
-                    index + 1,
-                    username,
-                    password
-                )
+            await refreshTokenBySession(
+                session_token,
+                index + 1,
+                username,
+                password
             );
-        }
-
-        counter++;
-        if (counter === 5) {
-            await Promise.all(promises);
-            promises = [];
-            counter = 0;
         }
     }
 
@@ -77,7 +66,7 @@ async function refreshToken(token, index, email, password) {
         let urlObject = {
             fn: "/auth/refresh",
             method: "post",
-            url: "http://localhost:8181/xxx/api/auth/refresh",
+            url: "http://localhost:8181/e2a5dd9c-d1cf-462b-a032-c0e808425d8a/api/auth/refresh",
             form: {
                 refresh_token: token,
             },
@@ -106,7 +95,7 @@ async function refreshTokenBySession(token, index, email, password) {
         let urlObject = {
             fn: "/auth/session",
             method: "post",
-            url: "http://localhost:8181/xxx/api/auth/session",
+            url: "http://localhost:8181/e2a5dd9c-d1cf-462b-a032-c0e808425d8a/api/auth/session",
             form: {
                 session_token: token,
             },
@@ -140,7 +129,7 @@ async function tokenRegister(accessToken, index) {
         let urlObject = {
             fn: "/token/register",
             method: "post",
-            url: "http://localhost:8181/xxx/api/token/register",
+            url: "http://localhost:8181/e2a5dd9c-d1cf-462b-a032-c0e808425d8a/api/token/register",
             form: {
                 unique_name: "slca",
                 access_token: accessToken,
@@ -173,7 +162,7 @@ async function getModels(accessToken, index) {
         let urlObject = {
             fn: "/api/models",
             method: "get",
-            url: "http://localhost:8181/xxx/backend-api/models",
+            url: "http://localhost:8181/e2a5dd9c-d1cf-462b-a032-c0e808425d8a/backend-api/models",
             headers: {
                 Authorization: `Bearer ${accessToken}`,
             },

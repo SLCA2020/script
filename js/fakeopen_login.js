@@ -67,7 +67,7 @@ async function login({ username, password }, index) {
         let urlObject = {
             fn: "/auth/login",
             method: "post",
-            url: "http://localhost:8181/xxx/api/auth/login",
+            url: "http://localhost:8181/e2a5dd9c-d1cf-462b-a032-c0e808425d8a/api/auth/login",
             form: {
                 username,
                 password,
@@ -103,7 +103,7 @@ async function tokenRegister(accessToken, index) {
         let urlObject = {
             fn: "/token/register",
             method: "post",
-            url: "http://localhost:8181/xxx/api/token/register",
+            url: "http://localhost:8181/e2a5dd9c-d1cf-462b-a032-c0e808425d8a/api/token/register",
             form: {
                 unique_name: "slca",
                 access_token: accessToken,
@@ -136,7 +136,7 @@ async function getModels(accessToken, index) {
         let urlObject = {
             fn: "/api/models",
             method: "get",
-            url: "http://localhost:8181/xxx/backend-api/models",
+            url: "http://localhost:8181/e2a5dd9c-d1cf-462b-a032-c0e808425d8a/backend-api/models",
             headers: {
                 Authorization: `Bearer ${accessToken}`,
             },
