@@ -17,11 +17,22 @@ let resJSON = [];
 async function main() {
     // 打印账号数量
     console.log(`账号数量: ${refreshtokenList.length}\n`);
-    let promises = [];
-    let counter = 0;
     for (let index = 0; index < refreshtokenList.length; index++) {
+        // 账号信息格式解析
         const { username, password, refresh_token, session_token } =
             refreshtokenList[index];
+
+        // 群消息格式解析
+        // const { refresh_token, session_token } = JSON.parse(
+        //     refreshtokenList[index].text
+        // );
+        // const username = index + 1,
+        //     password = index + 1;
+
+        if (!refresh_token && !session_token) {
+            console.log(`账号[${index + 1}]无 refresh_token 或 session_token`);
+            continue;
+        }
 
         resJSON[index] = {
             username: username,
