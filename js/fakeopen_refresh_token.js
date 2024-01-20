@@ -37,8 +37,8 @@ async function main() {
         resJSON[index] = {
             username: username,
             password: password,
-            refresh_token: refresh_token,
-            session_token: session_token,
+            refresh_token: refresh_token || "",
+            session_token: session_token || "",
             access_token: "",
             fk_token: "",
             login_time: new Date().toLocaleString(),
