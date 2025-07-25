@@ -112,6 +112,7 @@ async function tokenRegister(token,index) {
 main();
 
 //got的基本用法, 封装一下方便之后直接调用, 新手可以不动他直接用就行
+//got的基本用法, 封装一下方便之后直接调用, 新手可以不动他直接用就行
 async function request(opt) {
     const DEFAULT_RETRY = 3; //请求出错重试三次
     var resp = null, count = 0;
