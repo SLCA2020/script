@@ -161,22 +161,49 @@ def print_results(results: List[Dict[str, Any]]):
     print("\n" + "="*80)
     print("OpenAI API Key 模型可用性检查结果")
     print("="*80)
-    
+
     available_count = sum(1 for r in results if r["available"])
     total_count = len(results)
-    
+
     print(f"总计: {total_count} 个API key, 可用: {available_count} 个, 不可用: {total_count - available_count} 个")
     print("-"*80)
-    
+
     for i, result in enumerate(results, 1):
         status = "✓ 可用" if result["available"] else "✗ 不可用"
         response_time = f" ({result['response_time']}s)" if result["response_time"] else ""
-        
+
         print(f"{i:2d}. {result['api_key']} | {result['model']} | {status}{response_time}")
-        
+
         if result["error"]:
             print(f"     错误: {result['error']}")
         print()
+
+
+def print_available_keys(results: List[Dict[str, Any]], original_keys: List[str]):
+    """输出可用的完整API keys"""
+    available_results = [r for r in results if r["available"]]
+
+    if not available_results:
+        print("\n" + "="*50)
+        print("没有找到可用的API keys")
+        print("="*50)
+        return
+
+    print("\n" + "="*50)
+    print("可用的API Keys:")
+    print("="*50)
+
+    for result in available_results:
+        # 通过前8位和后4位匹配原始key
+        masked_key = result["api_key"]
+        prefix = masked_key[:8]
+        suffix = masked_key[-4:]
+
+        # 找到匹配的完整key
+        for original_key in original_keys:
+            if original_key.startswith(prefix) and original_key.endswith(suffix):
+                print(original_key)
+                break
 
 
 def save_results_to_json(results: List[Dict[str, Any]], output_file: str):
@@ -219,7 +246,10 @@ async def main():
     
     # 输出结果
     print_results(results)
-    
+
+    # 输出可用的API keys
+    print_available_keys(results, api_keys)
+
     # 保存到文件
     if args.output:
         save_results_to_json(results, args.output)
